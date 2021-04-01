@@ -12,6 +12,14 @@ This repository contains two Golang templates for OpenFaaS which give additional
 
 While one can use a go.mod file in the function folder to add dependencies, one would have to remove `require github.com/openfaas/templates-sdk v0.0.0-xxxxxxx` and the corresponding folder in function/vendor 
 
+### Use Gitlab Private Projects
+
+If one defines `PRIVATE_HOST_URL` and `PRIVATE_HOST_TOKEN` during `faas-cli build`, modules from private repositories can be used.
+(e.g.: `faas-cli build --build-arg PRIVATE_HOST_URL=git.example.com --build-arg PRIVATE_HOST_TOKEN=MY_API_TOKEN`)
+  
+`PRIVATE_HOST_URL`: url to host without protocol and tailing forward slash, e.g. `git.example.com`.  
+`PRIVATE_HOST_TOKEN`: gitlab token with repo read permissions  
+
 ----------------------------------------------
 
 Using the templates:

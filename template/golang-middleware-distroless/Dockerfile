@@ -18,11 +18,17 @@ RUN mkdir -p /go/src/handler
 WORKDIR /go/src/handler
 COPY . .
 
+ARG PRIVATE_HOST_URL
+ARG PRIVATE_HOST_TOKEN
+
 # Add user overrides to the root go.mod, which is the only place "replace" can be used
-RUN cat function/GO_REPLACE.txt >> ./go.mod || exit 0 && \
-    go get handler/function && \
-    # Run a gofmt and exclude all vendored code. \
-    test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "./function/vendor/*"))" || { echo "Run \"gofmt -s -w\" on your Golang code"; exit 1; } && \
+RUN git config --global url."https://oauth2:${PRIVATE_HOST_TOKEN}@${PRIVATE_HOST_URL}".insteadOf https://${PRIVATE_HOST_URL} && \
+    go env -w GOPRIVATE=${PRIVATE_HOST_URL} && \
+    cat function/GO_REPLACE.txt >> ./go.mod || exit 0 && \
+    go get handler/function
+
+# Run a gofmt and exclude all vendored code.
+RUN test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "./function/vendor/*"))" || { echo "Run \"gofmt -s -w\" on your Golang code"; exit 1; } && \
     CGO_ENABLED=${CGO_ENABLED} GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build --ldflags "-s -w" -a -installsuffix cgo -o handler . && \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test handler/function/... -cover
